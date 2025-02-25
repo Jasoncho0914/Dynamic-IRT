@@ -1,0 +1,155 @@
+\documentclass[12pt]{article}
+\usepackage{enumerate}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{xr}
+% \usepackage{indentfirst}
+% Required for inserting images
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\newcounter{saveeqn}
+\usepackage{stackengine}
+\usepackage{verbatimbox}
+\usepackage{setspace}      
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+%\usepackage{fontspec}
+\usepackage{tabularx}
+\newcommand{\blind}{1}
+\usepackage{booktabs,array}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\DeclareMathOperator*{\argmin}{arg\,min} % thin space, limits underneath in 
+\begin{document}
+
+\section{Introduction}
+Let's consider a dynamic Item Response Theory (IRT) model for $N$ students with, $\theta_{i,t}$, proficiency of the $i$-th student  at time $t$, following a Gaussian random walk with a fixed variance parameter $\sigma_{i,\theta}^2$. The parameter $d_{j,t}$, difficulty of question $j$-th question at time t is unknown. For simplicity, let's assume that each student receives the same set of problems at each $t$. The number of each problems solved by students may vary over time $j \in \{1,\ldots, n_t\}.$ Let $y_{i,t} = \{ y_{i,1,t},\ldots, y_{i,n_t,t}\}$. We have the following Bayesian hierarchical representation of the model:
+\begin{align*}
+	&y_{i,t,j} \sim Binomial(n_{t},\theta_{i,t} - d_{j,t}) \\
+	&[\theta_{i,0}] \sim N(0,\sigma^2_{i,0})\\
+	&[\theta_{i,t} - \theta_{i,t-1}|,\sigma^2_{i,\theta}] \sim N(0,\tau^2\lambda^2_{i,t})\\
+	&\tau \sim C^{+}(0,1) \\
+	&\lambda_{i,t} \sim C^{+}(0,1)\\
+	&[d] \sim N(0, I)	
+\end{align*}
+
+In this set-up, we have the following likelihood:
+\begin{align*}
+	&f(y|\theta,d)  \propto \prod_{t=1}^{T}\prod_{i=1}^{N}\prod_{j=1}^{n_t} \bigg(\frac{exp\{\theta_{i,t} - d_{j,t}\}^{y_{i,j,t}}}{1+exp\{\theta_{i,t} - d_{j,t}\}}\bigg).
+\end{align*}
+
+By Polya Gamma data augmentation, we have
+\begin{align*}
+	f(y_{i,j,t}|\theta_{i,t},d_{j,t}) &=  \frac{exp\{\theta_{i,t} - d_{j,t}\}^{y_{i,j,t}}}{1+exp\{\theta_{i,t} - d_{j,t}\}}  \\
+	&\propto exp\{\kappa_{i,j,t}(\theta_{i,t} - d_{j,t})\}\int_{0}^{\infty}exp\bigg\{\frac{-w_{i,j,t}(\theta_{i,t} - d_{j,t})^2}{2}\bigg\} dw \\
+	&\propto  exp\{\kappa_{i,j,t}(\theta_{i,t} - d_{j,t})\}\int_{0}^{\infty} exp(-w_{i,j,t}(\theta_{i,t} - d_{j,t})^2/2)  f(w_{i,j,t}|\theta_{i,t}-d_{j,t}) dw_{i,j,t} \\
+\end{align*}
+Introducing the variable $\omega_{i,j,t} \sim PG(1,0)$, we have the following likelihood:
+\begin{align*}
+	f(y_{i,t,j}|\theta_{i,t},d_{j,t},\omega_{i,j,t}) \propto exp\bigg\{-\frac{w_{i,j,t}}{2}\bigg(\frac{k_{i,j,t}}{w_{i,j,t}}-(\theta_{i,t} - d_{j,t})\bigg)^2 \bigg\},
+\end{align*}
+which is indeed Gaussian Likelihood. 
+
+\section{$\theta_{i,t}$}
+First, Let's now assume that $d_{j,t}$ is given,
+\begin{align*}
+	&f(y|\theta,d)  \propto \prod_{t=1}^{T}\prod_{i=1}^{N}\prod_{j=1}^{n_t} \bigg(\frac{exp\{\theta_{i,t} - d_{j,t}\}^{y_{i,j,t}}}{1+exp\{\theta_{i,t} - d_{j,t}\}}\bigg). \\
+	&f(y|\theta,d)  \propto \prod_{t=1}^{T}\prod_{i=1}^{N}\frac{exp\{\theta_{i,t} - d_{j,t}\}^{\sum_{j=1}^{n_t}
+	y_{i,j,t}}}{(1+exp\{\theta_{i,t} - d_{j,t}\})^{n_t}} 	
+\end{align*}
+Let $y^*_{i,t} = \sum_{j=1}^{n_t}y_{i,j,t}$ and $\kappa_{i,t} = y^*_{i,t} - \frac{n_t}{2}$ Then, by the parameter expansion described above, the likelihood
+\begin{align*}
+	&[\kappa_{i,t}|w_{i,t},\theta_{i,t},d_{j,t}] \sim N(w_{i,t}(\theta_{i,t} - d_{j,t}), w_{i,t}) & [w_{i,t}|n_t] \sim PG(n_t,0),
+\end{align*}
+Gaussian prior on $\theta_{i,t}$ results in Gaussian posterior. 
+
+\section{$d_{j,t}$}
+Similarly, define $y^{*}_{j,t} = \sum_{i=1}^{N} y_{i,j,t}$ and $\kappa_{j,t} = y^*_{j,t} - \frac{N}{2}$. Then the likelihood can be written as,
+\begin{align*}
+	&\kappa_{j,t}  \sim N(w_{j,t}(\theta_{i,t} - d_{j,t}),w_{j,t}) & [w_{j,t}|N] \sim PG(N,0)
+\end{align*}
+
+These two are equivalent:
+\newpage
+Horseshoe prior:
+\begin{align*}
+	&[\theta_{i,t} - \theta_{i,t-1}|,\sigma^2_{i,\theta}] \sim N(0,\tau^2\lambda^2_{i,t})\\
+	&\tau \sim C^{+}(0,1) \\
+	&\lambda_{i,t} \sim C^{+}(0,1)\\
+\end{align*}
+
+Parameter expansion on 
+\begin{align*}
+	&[\theta_{i,t} - \theta_{i,t-1}|,\sigma^2_{i,\theta}] \sim N(0,\tau^2\lambda^2_{i,t})\\
+	&\tau^2|\tau_x  \sim IG(1/2,1/\tau_x) & \tau_x \sim IG(1/2,1) \\
+	&\lambda_{i,t}^2|\lambda_{i,t}^*  \sim IG(1/2,1/\lambda_{i,t}^*) & \lambda_{i,t}^* \sim IG(1/2,1) \\
+\end{align*}
+
+%
+%
+%The posterior distribution of $\boldsymbol{\beta}|\boldsymbol{y},\tau,\boldsymbol{\lambda}$:
+%\begin{align*}
+%	f(\boldsymbol{\beta}|\boldsymbol{y},\tau,\boldsymbol{\lambda}) &\propto f(\boldsymbol{y}|\boldsymbol{\beta},\boldsymbol{\lambda},\tau) f(\boldsymbol{\beta}|\boldsymbol{\lambda},\tau)\\
+%	&\propto \mathcal{N}(\boldsymbol{y}|\boldsymbol{\beta},I)\mathcal{N}(\boldsymbol{\beta}|0,Q^{-1}),
+%\end{align*}
+%where 
+%\[
+%	Q = 
+%	\begin{bmatrix}
+%\frac{1}{\tau^2\lambda_{1}^2} + \frac{1}{\tau^2\lambda_{2}^2} & - \frac{1}{\tau^2\lambda_{2}^2} & 0 & 0 & \cdots & 0 \\
+%-\frac{1}{\tau^2\lambda_{2}^2} & \frac{1}{\tau^2\lambda_{2}^2} + \frac{1}{\tau^2\lambda_{3}^2} & -\frac{1}{\tau^2\lambda_{3}^2} & 0 & \cdots & 0 \\
+%0 & -\frac{1}{\tau^2\lambda_{3}^2} & \frac{1}{\tau^2\lambda_{3}^2} + \frac{1}{\tau^2\lambda_{4}^2} & -\frac{1}{\tau^2\lambda_{4}^2} & \cdots & 0 \\
+%\vdots & \vdots & \vdots & \vdots & \ddots & \vdots \\
+%0 & 0 & 0 & -\frac{1}{\tau^2\lambda_{n-1}^2} & \frac{1}{\tau^2\lambda_{n-1}^2} + \frac{1}{\tau^2\lambda_{n}^2} & -\frac{1}{\tau^2\lambda_{n}^2} \\
+%0 & 0 & 0 & 0 & -\frac{1}{\tau^2\lambda_{n}^2} & \frac{1}{\tau^2\lambda_{n}^2}
+%\end{bmatrix}.
+%\]
+%Q can also be decomposed into $Q = ADA^{T}$, where $D = diag(\frac{1}{\tau^2\lambda_{1}^{2}},\frac{1}{\tau^2\lambda_{2}^{2}},\ldots,\frac{1}{\tau^2\lambda_{n}^{2}})$, and
+%\[
+%A =
+%\begin{bmatrix}
+%1 & -1 & 0 & 0 & \cdots & 0 \\
+%0 & 1 & -1 & 0 & \cdots & 0 \\
+%0 & 0 & 1 & -1 & \cdots & 0 \\
+%\vdots & \vdots & \vdots & \vdots & \ddots & -1 \\
+%0 & 0 & 0 & 0 & \cdots & 1
+%\end{bmatrix}.
+%\]
+%Thus,
+%\begin{align*}
+%	f(\boldsymbol{\beta}|\boldsymbol{y},\tau,\boldsymbol{\lambda})  = \mathcal{N}\bigg(\boldsymbol{\beta}\bigg|\bigg(\frac{1}{\sigma^2}I + ADA^{T}\bigg)^{-1}\frac{\boldsymbol{y}}{\sigma^2},\bigg(\frac{1}{\sigma^2}I + ADA^{T}\bigg)^{-1}\bigg).
+%\end{align*}
+%\subsection{$\omega_t$}
+%\[
+%B =
+%\begin{bmatrix}
+%1 & 0 & 0 & 0 & \cdots & 0 \\
+%-1 & 1 & 0 & 0 & \cdots & 0 \\
+%0 & -1 & 1 & 0 & \cdots & 0 \\
+%\vdots & \vdots & \vdots & \vdots & \ddots & \vdots \\
+%0 & 0 & 0 & 0 & -1 & 1
+%\end{bmatrix}.
+%\]
+%what is then,
+%$$
+%B\bigg(\frac{1}{\sigma^2}I + ADA^{T}\bigg)^{-1}\frac{\boldsymbol{y}}{\sigma^2}
+%$$
+
+
+\end{document}
+
+
+
+
+
+
+
+
